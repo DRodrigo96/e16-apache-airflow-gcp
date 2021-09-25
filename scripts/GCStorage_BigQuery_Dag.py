@@ -1,17 +1,12 @@
 
-
+# AIRFLOW MODULES
 from airflow import DAG
-
 from airflow.utils.dates import days_ago
-
 from airflow.models import Variable
-
 from airflow.providers.google.cloud.transfers.gcs_to_bigquery import GCSToBigQueryOperator
 from airflow.providers.google.cloud.operators.bigquery import BigQueryExecuteQueryOperator
 from airflow.providers.google.cloud.hooks.gcs import GCSHook
-
 from airflow.operators.python import PythonOperator
-
 
 # VARIABLES
 PROJECT = Variable.get('project')
@@ -20,7 +15,6 @@ BACKUP_BUCKET = Variable.get('backup_bucket')
 DATASET = Variable.get('dataset')
 ORIG_TABLE = Variable.get('orig_table')
 
-
 # ARGUMENTS
 default_args = {
     'owner': 'David Sanchez',
@@ -28,7 +22,7 @@ default_args = {
 }
 
 dag_args = {
-    'dag_id': '5_variables',
+    'dag_id': 'gcs_bigquery',
     'schedule_interval': '@daily', 
     'catchup': False, 
     'max_active_runs': 1,
@@ -43,13 +37,11 @@ dag_args = {
     'default_args': default_args
 }
 
-
 # HOOKS
 def list_objects(bucket=None):
     return GCSHook().list(bucket)
 
 def move_objects(source_bucket=None, destination_bucket=None, prefix=None, **kwargs):
-
     storage_objects = kwargs['ti'].xcom_pull(task_ids='list_files')
 
     for ob in storage_objects:
@@ -61,8 +53,7 @@ def move_objects(source_bucket=None, destination_bucket=None, prefix=None, **kwa
         GCSHook().copy(source_bucket, ob, destination_bucket, dest_ob)
         GCSHook().delete(source_bucket, ob)
 
-
-# DAG
+# DAG DEFINITION
 with DAG(**dag_args) as dag:
 
     # TASK
@@ -127,6 +118,5 @@ with DAG(**dag_args) as dag:
         provide_context=True
     )
 
-
-# Dependencies
+# DEPENDENCIES
 list_files >> cargar_datos >> tabla_resumen >> move_files

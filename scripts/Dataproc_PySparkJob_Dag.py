@@ -1,46 +1,40 @@
 
 
-
+# AIRFLOW MODULES
 from airflow import DAG
-
 from airflow.utils.dates import days_ago
-
 from airflow.providers.google.cloud.operators.dataproc import DataprocCreateClusterOperator
 from airflow.providers.google.cloud.operators.dataproc import DataprocSubmitPySparkJobOperator
 from airflow.providers.google.cloud.operators.dataproc import DataprocSubmitJobOperator
 from airflow.providers.google.cloud.operators.dataproc import DataprocDeleteClusterOperator
-
 from airflow.operators.python import BranchPythonOperator
-
 from random import uniform
-
 from airflow.utils.task_group import TaskGroup
 
-
+# ARGUMENTS
 default_args = {
     'owner': 'David Sanchez',
     'start_date': days_ago(1)
 }
 
 dag_args = {
-    'dag_id': '10_dataproc_delete',
+    'dag_id': 'dataproc_spark',
     'schedule_interval': '@weekly',
     'catchup': False,
     'default_args': default_args
 }
 
-# Python Operator
+# OPERATOR
 pyspark_files = ('avg_quant', 'avg_tincome', 'avg_uprice')
 
+# Para ejemplo de branch operator
 def number_task(min_num=None, max_num=None):
-    #return 'par_task' if round(uniform(min_num, max_num)) % 2 == 0 else 'impar_task'
-    #if round(uniform(min_num, max_num)) % 2 == 0:
-    if 5 % 2 == 0:
+    if round(uniform(min_num, max_num)) % 2 != 0:
         return 'impar_task'
     else:
         return [f'par_task.{x}' for x in pyspark_files]
 
-
+# DAG DEFINITION
 with DAG(**dag_args) as dag:
 
 # TASK 1: CREATE CLUSTER --> OPERATOR
@@ -53,7 +47,6 @@ with DAG(**dag_args) as dag:
         region='us-east1',
     )
 
-
 # TASK 2: IDENTIFICAR NÚMERO --> OPERATOR (PYTHON)
     iden_number = BranchPythonOperator(
         task_id='iden_number',
@@ -64,7 +57,6 @@ with DAG(**dag_args) as dag:
         },
         do_xcom_push=False
     )
-
 
 # TASK 3: PYSPARK JOBS
 
@@ -125,7 +117,6 @@ with DAG(**dag_args) as dag:
                 gcp_conn_id='google_cloud_default'
             )             
 
-
 # TASK 4: DELETE CLUSTER --> OPERATOR
     delete_cluster = DataprocDeleteClusterOperator(
         task_id='delete_cluster',
@@ -135,9 +126,7 @@ with DAG(**dag_args) as dag:
         region='us-east1'
     )
 
-
-
-# Dependencies
+# DEPENDENCIES
 (
     create_cluster 
     >> iden_number 
