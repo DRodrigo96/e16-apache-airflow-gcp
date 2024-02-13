@@ -1,0 +1,16 @@
+{
+  "title": "Dataproc Batch User",
+  "description": "Rol para creación de jobs en Dataproc Batch",
+  "includedPermissions": [
+    "dataproc.batches.create",
+    "dataproc.batches.delete",
+    "dataproc.batches.get",
+    "dataproc.batches.list",
+    "dataproc.batches.cancel",
+    "dataproc.operations.cancel",
+    "dataproc.operations.delete",
+    "dataproc.operations.get",
+    "dataproc.operations.list"
+  ],
+  "stage": "ALPHA"
+}

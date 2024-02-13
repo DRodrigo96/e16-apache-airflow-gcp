@@ -1,0 +1,5 @@
+{
+  "GCP_PROJECT_ID": "{project-id}",
+  "GCP_DATA_BUCKET": "airflow-bucket-{random}",
+  "GCP_DEFAULT_REGION": "us-central1"
+}

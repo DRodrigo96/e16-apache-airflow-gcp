@@ -1,0 +1,1 @@
+SELECT year, COUNT(1) AS count_area FROM `%CREATED_TABLE%` GROUP BY year;
